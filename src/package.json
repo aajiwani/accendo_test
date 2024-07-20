@@ -1,0 +1,38 @@
+{
+  "name": "src",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "test": "jest",
+    "migrate": "node ./bin/migrate.js",
+    "pm2": "pm2 start processes.json --no-daemon"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "morgan": "~1.9.1",
+    "pg": "^8.12.0",
+    "pm2": "^5.4.2",
+    "sequelize": "^6.37.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "keywords": [
+    "accendo",
+    "hr",
+    "test"
+  ],
+  "author": "Amir Ali Jiwani <amirali.jiwani89@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aajiwani/accendo_test/issues"
+  },
+  "homepage": "https://github.com/aajiwani/accendo_test#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aajiwani/accendo_test.git"
+  }
+}

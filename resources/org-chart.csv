@@ -1,0 +1,11 @@
+﻿Job Id,Job Title,Employee Name,Employee ID,Email Address,Reporting To Job Id,Reporting to,Role Priority,Job Level,Is Root? (input yes for root role only)
+ACC-0001,CEO,Alice,1001,alice@company.com,,,1,1,yes
+ACC-0002,CTO,Bob,1002,bob@company.com,ACC-0001,Alice,2,2,no
+ACC-0003,CFO,Charlie,1003,charlie@company.com,ACC-0001,Alice,2,2,no
+ACC-0004,Engineer,David,1004,david@company.com,ACC-0002,Bob,3,3,no
+ACC-0005,Engineer,Faralisa,1005,faralisa@company.com,ACC-0002,Bob,3,3,no
+ACC-0006,Engineer,Ian Choo,1006,ianchoo@company.com,ACC-0002,Bob,3,3,no
+ACC-0007,Engineer,Dev,1007,dev@company.com,ACC-0002,Bob,3,3,no
+ACC-0008,Accountant,Eve,1008,eve@company.com,ACC-0003,Charlie,3,3,no
+ACC-0009,Accountant,Everest,1009,everest@company.com,ACC-0003,Charlie,3,3,no
+ACC-0010,Accountant,Alen,1010,alen@company.com,ACC-0003,Charlie,3,3,no
