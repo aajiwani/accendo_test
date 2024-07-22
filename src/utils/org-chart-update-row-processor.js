@@ -1,5 +1,7 @@
 const OrgChartCSVConsts = require("./org-chart-csv-consts");
+const findManager = require("./find-manager");
 const db = require("./../database/index");
+const createEmployeeRow = require("./create-emlpoyee-row");
 
 const rowProcessor = async (row, trans, orgId) => {
   let jobTitle = null;
@@ -22,71 +24,91 @@ const rowProcessor = async (row, trans, orgId) => {
     );
   }
 
-  let currentEmployee = null;
+  let rowEmployee = null;
   // Find if the person exists in our db
   try {
-    currentEmployee = await db.accendo.Employee.findOne({
+    rowEmployee = await db.accendo.Employee.findOne({
       where: {
-        employeeName: row[OrgChartCSVConsts.EmlpoyeeName],
-        employeeId: row[OrgChartCSVConsts.employeeId],
-        belongs_to: orgId,
+        emailAddress: row[OrgChartCSVConsts.EmailAddress],
+        employeeId: parseInt(row[OrgChartCSVConsts.EmployeeId]),
+        belongs_to: parseInt(orgId),
       },
-      rejectOnEmpty: true,
       transaction: trans,
+      logging: console.log
     });
-  } catch (e) {
+
+    console.log()
+
+    // if (rowEmployee === null) throw new Error("Employee not found!");
+
     // Looks like we have a new employee joining in here
-    // We will absorb this error
-  }
+    // let manager = null;
 
-  if (!currentEmployee) {
-    // We are clear to create a new employee here,
-    // We will start by finding their manager in our database
-  }
+    // With all non-root employees we must have a manager in the org
+    // if (row[OrgChartCSVConsts.IsRoot] === "no") {
+        // console.log(`Finding manager with ${row[OrgChartCSVConsts.ReportsToPerson]} ${row[OrgChartCSVConsts.ReportsToJobId]}`);
+        // manager = await findManager(
+        //     row[OrgChartCSVConsts.ReportsToPerson],
+        //     row[OrgChartCSVConsts.ReportsToJobId],
+        //     orgId,
+        //     trans
+        //   );
 
-  // Sort out the manager for the person, it changes from root to no root
-  let manager = null;
-  try {
-    if (row[OrgChartCSVConsts.IsRoot] === "no") {
-      // If someone is not a root and without a manager, we have a problem in the organization
-      manager = await db.accendo.Employee.findOne({
-        where: {
-          employeeName: row[OrgChartCSVConsts.ReportsToPerson],
-          jobId: row[OrgChartCSVConsts.ReportsToJobId],
-          belongs_to: orgId,
-        },
-        rejectOnEmpty: true,
-        transaction: trans,
-      });
-    }
-  } catch (e) {
-    // Looks like we found someone without manager in the organization
-    await trans.rollback();
-    throw new Error(
-      "We expected everyone in the organization to have a manager"
-    );
-  }
+    // }
+    //   manager = await findManager(
+    //     row[OrgChartCSVConsts.ReportsToPerson],
+    //     row[OrgChartCSVConsts.ReportsToJobId],
+    //     orgId,
+    //     trans
+    //   );
 
-  const createdEmployee = await db.accendo.Employee.create(
-    {
+    await rowEmployee.set({
       jobId: row[OrgChartCSVConsts.JobId],
-      employeeName: row[OrgChartCSVConsts.EmlpoyeeName],
-      employeeId: parseInt(row[OrgChartCSVConsts.EmployeeId]),
-      emailAddress: row[OrgChartCSVConsts.EmailAddress],
       rolePriority: parseInt(row[OrgChartCSVConsts.RolePriority]),
       jobLevel: parseInt(row[OrgChartCSVConsts.JobLevel]),
       isRoot: row[OrgChartCSVConsts.IsRoot] === "yes" ? true : false,
       belongsTo: orgId,
-      reportsTo:
-        row[OrgChartCSVConsts.IsRoot] === "yes" ? null : manager.toJSON().id,
+      reportsTo: null,
       jobTitleId: jobTitle.toJSON().id,
-    },
-    {
-      transaction: trans,
-    }
-  );
+    });
 
-  return createdEmployee;
+    // await rowEmployee.save();
+  } catch (e) {
+    console.log("");
+    console.log("");
+    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+    console.log(e);
+    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+    console.log("");
+    console.log("");
+    // Looks like we have a new employee joining in here
+    let manager = null;
+
+    // With all non-root employees we must have a manager in the org
+    if (row[OrgChartCSVConsts.IsRoot] === "no")
+      manager = await findManager(
+        row[OrgChartCSVConsts.ReportsToPerson],
+        row[OrgChartCSVConsts.ReportsToJobId],
+        orgId,
+        trans
+      );
+
+    rowEmployee = await createEmployeeRow(
+      row,
+      orgId,
+      jobTitle.toJSON().id,
+      row[OrgChartCSVConsts.IsRoot] === "yes" ? null : manager.toJSON().id,
+      trans
+    );
+  }
+
+  // Coming out of the above, we will have either a newly created employee or an old employee
+  return rowEmployee;
 };
 
 module.exports = rowProcessor;
