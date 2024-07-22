@@ -1,0 +1,118 @@
+{
+	"info": {
+		"_postman_id": "576ba099-beb6-4c90-9b68-1ba88d9ebc2d",
+		"name": "Accendo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Flourish Organization Chart",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "org_chart",
+							"type": "file",
+							"src": "/home/amiralijiwani/backyard/accendo_test/resources/org-chart.csv"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:3000/accendo/org-chart",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"accendo",
+						"org-chart"
+					]
+				},
+				"description": "# Creates an organization if supplied the correct CSV\n\n## Example successful response\n\n```json\n{\n    \"message\": \"Org chart successfully consumed\",\n    \"organization_created\": {\n        \"id\": 23,\n        \"name\": \"running lavender ant\"\n    },\n    \"employees\": {\n        \"count\": 10,\n        \"employees\": [\n            1001,\n            1003,\n            1002,\n            1010,\n            1009,\n            1008,\n            1007,\n            1006,\n            1005,\n            1004\n        ]\n    }\n}\n```\n\nIt provides back the organization with random name generated, alongside count of employees and their employeeIds"
+			},
+			"response": []
+		},
+		{
+			"name": "Solution Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3000",
+					"host": [
+						"localhost"
+					],
+					"port": "3000"
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Modify Organization Chart",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "org_chart",
+							"type": "file",
+							"src": "/home/amiralijiwani/backyard/accendo_test/resources/org-chart.csv"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:3000/accendo/org-chart/:org_id",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"accendo",
+						"org-chart",
+						":org_id"
+					],
+					"variable": [
+						{
+							"key": "org_id",
+							"value": "1"
+						}
+					]
+				},
+				"description": "# Modifies an organization chart, provided right CSV\n\nChanges to the organizational chart would be reflected once the request is successful\n\n## Required Parameters\nType: PUT\nQueryParam: OrgId"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Organization Chart",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3000/accendo/org-chart/:org_id",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"accendo",
+						"org-chart",
+						":org_id"
+					],
+					"variable": [
+						{
+							"key": "org_id",
+							"value": "23"
+						}
+					]
+				},
+				"description": "# Produces an organizational chart provided an organization id\n\nTYPE: GET\nQueryParam: OrgId\n\n## Example Response\n```json\n[\n    {\n        \"employeeId\": 1001,\n        \"employeeName\": \"Alice\",\n        \"jobLevel\": 1,\n        \"jobtitle\": \"CEO\",\n        \"toplevel\": true,\n        \"reportingto\": null,\n        \"managerjobtitle\": null,\n        \"organization\": \"running lavender ant\"\n    },\n    {\n        \"employeeId\": 1003,\n        \"employeeName\": \"Charlie\",\n        \"jobLevel\": 2,\n        \"jobtitle\": \"CFO\",\n        \"toplevel\": false,\n        \"reportingto\": \"Alice\",\n        \"managerjobtitle\": \"CEO\",\n        \"organization\": \"running lavender ant\"\n    },\n    {\n        \"employeeId\": 1002,\n        \"employeeName\": \"Bob\",\n        \"jobLevel\": 2,\n        \"jobtitle\": \"CTO\",\n        \"toplevel\": false,\n        \"reportingto\": \"Alice\",\n        \"managerjobtitle\": \"CEO\",\n        \"organization\": \"running lavender ant\"\n    },\n    {\n        \"employeeId\": 1010,\n        \"employeeName\": \"Alen\",\n        \"jobLevel\": 3,\n        \"jobtitle\": \"Accountant\",\n        \"toplevel\": false,\n        \"reportingto\": \"Charlie\",\n        \"managerjobtitle\": \"CFO\",\n        \"organization\": \"running lavender ant\"\n    },\n    {\n        \"employeeId\": 1009,\n        \"employeeName\": \"Everest\",\n        \"jobLevel\": 3,\n        \"jobtitle\": \"Accountant\",\n        \"toplevel\": false,\n        \"reportingto\": \"Charlie\",\n        \"managerjobtitle\": \"CFO\",\n        \"organization\": \"running lavender ant\"\n    },\n    {\n        \"employeeId\": 1008,\n        \"employeeName\": \"Eve\",\n        \"jobLevel\": 3,\n        \"jobtitle\": \"Accountant\",\n        \"toplevel\": false,\n        \"reportingto\": \"Charlie\",\n        \"managerjobtitle\": \"CFO\",\n        \"organization\": \"running lavender ant\"\n    },\n    {\n        \"employeeId\": 1007,\n        \"employeeName\": \"Dev\",\n        \"jobLevel\": 3,\n        \"jobtitle\": \"Engineer\",\n        \"toplevel\": false,\n        \"reportingto\": \"Bob\",\n        \"managerjobtitle\": \"CTO\",\n        \"organization\": \"running lavender ant\"\n    },\n    {\n        \"employeeId\": 1006,\n        \"employeeName\": \"Ian Choo\",\n        \"jobLevel\": 3,\n        \"jobtitle\": \"Engineer\",\n        \"toplevel\": false,\n        \"reportingto\": \"Bob\",\n        \"managerjobtitle\": \"CTO\",\n        \"organization\": \"running lavender ant\"\n    },\n    {\n        \"employeeId\": 1005,\n        \"employeeName\": \"Faralisa\",\n        \"jobLevel\": 3,\n        \"jobtitle\": \"Engineer\",\n        \"toplevel\": false,\n        \"reportingto\": \"Bob\",\n        \"managerjobtitle\": \"CTO\",\n        \"organization\": \"running lavender ant\"\n    },\n    {\n        \"employeeId\": 1004,\n        \"employeeName\": \"David\",\n        \"jobLevel\": 3,\n        \"jobtitle\": \"Engineer\",\n        \"toplevel\": false,\n        \"reportingto\": \"Bob\",\n        \"managerjobtitle\": \"CTO\",\n        \"organization\": \"running lavender ant\"\n    }\n]\n```"
+			},
+			"response": []
+		}
+	]
+}
