@@ -108,3 +108,7 @@ Bootstrapping guide used [here](https://semaphoreci.com/community/tutorials/dock
 > The APIs are well tested with Postman, you can find the collection in the source code at `./resources/Accendo.postman_collection.json`, in case the link [here](./resources/Accendo.postman_collection.json) doesn't work.
 
 You can simply import the collection in your local postman to give it a try. Make sure the docker containers are working, APIs should be responding to `localhost:3000` hostname.
+
+## Code Structure
+
+> A small help to navigate the code [here](./CodeStructure.md)
