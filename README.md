@@ -12,6 +12,14 @@
 
 File used as basic org chart [OrgChart.csv](./resources/org-chart.csv)
 
+## Objectives:
+
+> This test aims to see how you handle building RESTful APIs to manage an
+> organizational chart. Your challenge is to create a system that can upload an entire
+> chart and make updates to it, like adding a new team member or changing someone's
+> role. Show us your skills in handling API requests, working with CSV files, and
+> documenting your process.
+
 ## Used technologies
 
 1. NodeJS (Express) { NodeJS version: 20.15.1 }
@@ -64,6 +72,33 @@ File used as basic org chart [OrgChart.csv](./resources/org-chart.csv)
     2. Visiting web on browser
     [http://localhost:3000](http://localhost:3000/)
 
+7. Run migration within the created container
+    1. Attach shell to created container ```docker exec -it {accendo_test_accendo-test_container_id} sh ```
+    1. Execute ```npm run migrate```
+
+    This step should help your local postgres to setup for success.
+
+
+
+## JSDoc
+
+### Generating docs
+
+Use terminal to execute
+1. Open terminal at the root of the folder
+2. Execute command to generate docs
+```shell
+$> cd src
+src $> npx jsdoc routes/accendo.js
+```
+
+Using generated docs
+1. Open `${root}/src/out` in your file browser
+2. Browse `index.html`
+
 
 ## References
 Bootstrapping guide used [here](https://semaphoreci.com/community/tutorials/dockerizing-a-node-js-web-application)
+
+## Room for improvement
+> [here](./RoomForImprovements.md) you go!

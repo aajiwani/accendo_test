@@ -4,6 +4,7 @@ version: "3.9"
 services:
   postgres:
     image: postgres:latest
+    hostname: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -24,6 +25,9 @@ services:
       - postgres
     ports:
       - '3000:3000'
+    volumes:
+      - ./src/:/opt/app
+      - ./src/node_modules:/opt/app/node_modules
         
 volumes:
   accendo-test-db:
