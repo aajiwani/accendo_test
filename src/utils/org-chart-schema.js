@@ -45,16 +45,16 @@ const schema = {
         }
       },
       required: [
-        "Job Id",
-        "Job Title",
-        "Employee Name",
-        "Employee ID",
-        "Email Address",
-        "Reporting To Job Id",
-        "Reporting to",
-        "Role Priority",
-        "Job Level",
-        "Is Root? (input yes for root role only)"
+        OrgChartCSVConsts.JobId,
+        OrgChartCSVConsts.JobTitle,
+        OrgChartCSVConsts.EmlpoyeeName,
+        OrgChartCSVConsts.EmployeeId,
+        OrgChartCSVConsts.EmailAddress,
+        OrgChartCSVConsts.ReportsToJobId,
+        OrgChartCSVConsts.ReportsToPerson,
+        OrgChartCSVConsts.RolePriority,
+        OrgChartCSVConsts.JobLevel,
+        OrgChartCSVConsts.IsRoot
       ],
     },
   ],
