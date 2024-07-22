@@ -72,6 +72,13 @@ File used as basic org chart [OrgChart.csv](./resources/org-chart.csv)
     2. Visiting web on browser
     [http://localhost:3000](http://localhost:3000/)
 
+7. Run migration within the created container
+    1. Attach shell to created container ```docker exec -it {accendo_test_accendo-test_container_id} sh ```
+    1. Execute ```npm run migrate```
+
+    This step should help your local postgres to setup for success.
+
+
 
 ## JSDoc
 
@@ -92,3 +99,6 @@ Using generated docs
 
 ## References
 Bootstrapping guide used [here](https://semaphoreci.com/community/tutorials/dockerizing-a-node-js-web-application)
+
+## Room for improvement
+> [here](./RoomForImprovements.md) you go!
