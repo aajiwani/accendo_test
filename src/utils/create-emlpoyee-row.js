@@ -10,7 +10,7 @@ const createEmployeeRow = async (
 ) => {
   const creationParams = {
     jobId: row[OrgChartCSVConsts.JobId],
-    employeeName: row[OrgChartCSVConsts.EmlpoyeeName],
+    employeeName: row[OrgChartCSVConsts.EmployeeName],
     employeeId: parseInt(row[OrgChartCSVConsts.EmployeeId]),
     emailAddress: row[OrgChartCSVConsts.EmailAddress],
     rolePriority: parseInt(row[OrgChartCSVConsts.RolePriority]),

@@ -7,14 +7,14 @@ const OrgChartJSONSort = (json) => (a, b) => {
     const managerA = json.find(
       (r) =>
         r[OrgChartCSVConsts.JobId] === a[OrgChartCSVConsts.ReportsToJobId] &&
-        r[OrgChartCSVConsts.EmlpoyeeName] ===
+        r[OrgChartCSVConsts.EmployeeName] ===
           a[OrgChartCSVConsts.ReportsToPerson]
     );
 
     const managerB = json.find(
       (r) =>
         r[OrgChartCSVConsts.JobId] === b[OrgChartCSVConsts.ReportsToJobId] &&
-        r[OrgChartCSVConsts.EmlpoyeeName] ===
+        r[OrgChartCSVConsts.EmployeeName] ===
           b[OrgChartCSVConsts.ReportsToPerson]
     );
 

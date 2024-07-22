@@ -14,7 +14,7 @@ const schema = {
         [OrgChartCSVConsts.JobTitle]: {
           type: "string",
         },
-        [OrgChartCSVConsts.EmlpoyeeName]: {
+        [OrgChartCSVConsts.EmployeeName]: {
           type: "string",
         },
         [OrgChartCSVConsts.EmployeeId]: {
@@ -47,7 +47,7 @@ const schema = {
       required: [
         OrgChartCSVConsts.JobId,
         OrgChartCSVConsts.JobTitle,
-        OrgChartCSVConsts.EmlpoyeeName,
+        OrgChartCSVConsts.EmployeeName,
         OrgChartCSVConsts.EmployeeId,
         OrgChartCSVConsts.EmailAddress,
         OrgChartCSVConsts.ReportsToJobId,

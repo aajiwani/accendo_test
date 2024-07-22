@@ -1,7 +1,7 @@
 const CSVRowConsts = Object.freeze({
     JobId: 'Job Id',
     JobTitle: 'Job Title',
-    EmlpoyeeName: 'Employee Name',
+    EmployeeName: 'Employee Name',
     EmployeeId: 'Employee ID',
     EmailAddress: 'Email Address',
     ReportsToJobId: 'Reporting To Job Id',
