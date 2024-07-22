@@ -16,6 +16,10 @@ const orgChartCSVSchema = require("./../utils/org-chart-schema");
 const orgChartValidations = require("./../utils/org-chart-validation");
 const orgChartJsonSort = require("./../utils/csv-json-org-sort");
 const orgChartRowProcessor = require("./../utils/org-chart-row-processor");
+const orgChartUpdateRowProcessor = require("./../utils/org-chart-update-row-processor");
+const Sequelize = require("sequelize");
+const findManager = require("./../utils/find-manager");
+const OrgChartCSVConsts = require("./../utils/org-chart-csv-consts");
 
 const ajv = require("ajv");
 const {
@@ -42,6 +46,7 @@ const router = express.Router();
 const db = require("../database/index");
 
 const csvToJson = require("csvtojson");
+const createEmployeeRow = require("../utils/create-emlpoyee-row");
 
 /**
  * Route serving current org chart.
@@ -52,17 +57,22 @@ const csvToJson = require("csvtojson");
  * @param {string} path - Express path
  * @param {callback} middleware - Express middleware.
  */
-router.get("/org-chart/:org_id", function (req, res) {
-  db.accendo.Employee.findAll({
-    where: { belongs_to: req.params.org_id },
-    raw: false,
-  })
-    .then((emlpoyees) => {
-      res.status(200).send(JSON.stringify(emlpoyees));
-    })
-    .catch((err) => {
-      res.status(500).send(JSON.stringify(err));
-    });
+router.get("/org-chart/:org_id", async function (req, res) {
+  res.status(200).send(
+    await db.sequelize.query(
+      `SELECT e."employeeId", e."employeeName", e."jobLevel", ejt.title as JobTitle, e."isRoot" as TopLevel, m."employeeName" as reportingTo, ejt2.title as ManagerJobTitle, o."name" as organization from "Employees" e
+FULL OUTER JOIN "Employees" m ON (e.reports_to = m."id")
+INNER JOIN "Organizations" o ON (e.belongs_to = o.id)
+FULL OUTER JOIN "EmployeeJobTitles" ejt ON (e."jobTitleId" = ejt.id)
+FULL OUTER JOIN "EmployeeJobTitles" ejt2 ON (m."jobTitleId" = ejt2.id)
+WHERE o.id= :org_id
+ORDER BY e."jobLevel" ASC`,
+      {
+        replacements: { org_id: req.params.org_id },
+        type: Sequelize.QueryTypes.SELECT,
+      }
+    )
+  );
 });
 
 /**
@@ -204,54 +214,143 @@ router.put(
         // Order the incoming record by the heirarchy, root at the top
         json.sort(orgChartJsonSort(json));
 
-        let employees = [];
-
         // Run in a trasaction, so if we cause a problem, organization would fail to be created
         const t = await db.sequelize.transaction();
 
-        // For each row in CSV, this is how the process would look like
+        const identifiedForDeletion = await db.accendo.Employee.findAll({
+          where: {
+            emailAddress: {
+              [Sequelize.Op.notIn]: json.map(
+                (r) => r[OrgChartCSVConsts.EmailAddress]
+              ),
+            },
+            belongsTo: parseInt(org.toJSON().id),
+          },
+          transaction: t,
+        });
+
+        // Derisk employees marked for deletion
+        await db.accendo.Employee.update(
+          { reportsTo: null },
+          {
+            where: {
+              reportsTo: identifiedForDeletion.map((r) => r.toJSON().id),
+              belongsTo: parseInt(org.toJSON().id),
+            },
+            transaction: t,
+          }
+        );
+
+        // Create accounts that doesn't exist in the organization
         for (let row of json) {
-          try {
-            const empl = await orgChartRowProcessor(
-              row,
-              t,
-              preparedOrg.toJSON().id
-            );
-            employees.push(empl.employeeId);
-          } catch (e) {
-            res.status(500).send(e);
+          await db.accendo.Employee.count({
+            where: {
+              emailAddress: row[OrgChartCSVConsts.EmailAddress],
+              belongsTo: parseInt(org.toJSON().id),
+            },
+          }).then(async (count) => {
+            // Find or create JobTitle
+            try {
+              jobTitle = await db.accendo.EmployeeJobTitle.findOne({
+                where: { title: row[OrgChartCSVConsts.JobTitle] },
+                rejectOnEmpty: true,
+                transaction: t,
+              });
+            } catch (e) {
+              jobTitle = await db.accendo.EmployeeJobTitle.create(
+                {
+                  title: row[OrgChartCSVConsts.JobTitle],
+                },
+                {
+                  transaction: t,
+                }
+              );
+            }
+
+            if (count == 0) {
+              // We must create the new users
+              try {
+                await createEmployeeRow(
+                  row,
+                  org.toJSON().id,
+                  jobTitle.toJSON().id,
+                  null,
+                  t
+                );
+              } catch (e) {
+                res.status(500).send(e);
+                await t.rollback();
+              }
+            } else {
+              // Or we modify the existing
+              await db.accendo.Employee.update(
+                {
+                  jobId: row[OrgChartCSVConsts.JobId],
+                  rolePriority: parseInt(row[OrgChartCSVConsts.RolePriority]),
+                  jobLevel: parseInt(row[OrgChartCSVConsts.JobLevel]),
+                  isRoot:
+                    row[OrgChartCSVConsts.IsRoot] === "yes" ? true : false,
+                  jobTitleId: jobTitle.toJSON().id,
+                },
+                {
+                  where: {
+                    emailAddress: row[OrgChartCSVConsts.EmailAddress],
+                    belongsTo: parseInt(org.toJSON().id),
+                  },
+                  transaction: t,
+                }
+              );
+            }
+          });
+        }
+
+        // Once we are sure everything exist in our database
+        // Let's assign the rightful manager
+        for (let row of json) {
+          if (row[OrgChartCSVConsts.IsRoot] === "no") {
+            try {
+              const manager = await findManager(
+                row[OrgChartCSVConsts.ReportsToPerson],
+                row[OrgChartCSVConsts.ReportsToJobId],
+                parseInt(org.toJSON().id),
+                t
+              );
+
+              await db.accendo.Employee.update(
+                {
+                  reportsTo: manager.toJSON().id,
+                },
+                {
+                  where: {
+                    emailAddress: row[OrgChartCSVConsts.EmailAddress],
+                    belongsTo: parseInt(org.toJSON().id),
+                  },
+                  transaction: t,
+                }
+              );
+            } catch (e) {
+              res.status(500).send(JSON.stringify(e));
+              return;
+            }
           }
         }
 
-        // Once we are sure that our transaction has no outstanding matters to worry about, let's return the result
+        // Finally delete the ones we don't have anymore in the organization
+        await db.accendo.Employee.destroy({
+          where: {
+            id: identifiedForDeletion.map((r) => r.toJSON().id),
+          },
+          transaction: t,
+        });
+
         await t.commit();
 
-        // We are good with situating our organization in the database
-        // Let's show a summary so that rest of the APIs could be called accordingly
         res.status(200).send({
-          message: "Org chart successfully consumed",
-          organization_created: {
-            id: preparedOrg.id,
-            name: preparedOrg.name,
-          },
-          employees: {
-            count: employees.length,
-            employees,
-          },
+          message: "Successfully changed the organization",
         });
       });
   }
 );
-
-// router.get("/:id", function(req, res) {
-//     db.Person.findByPk(req.params.id)
-//         .then( person => {
-//             res.status(200).send(JSON.stringify(person));
-//         })
-//         .catch( err => {
-//             res.status(500).send(JSON.stringify(err));
-//         });
-// });
 
 /**
  * Route to modify an employee present in the org-chart
@@ -262,19 +361,7 @@ router.put(
  * @param {string} path - Express path
  * @param {callback} middleware - Express middleware.
  */
-router.put("/employee", function (req, res) {
-  // db.Person.create({
-  //     firstName: req.body.firstName,
-  //     lastName: req.body.lastName,
-  //     id: req.body.id
-  //     })
-  //     .then( person => {
-  //         res.status(200).send(JSON.stringify(person));
-  //     })
-  //     .catch( err => {
-  //         res.status(500).send(JSON.stringify(err));
-  //     });
-});
+router.put("/employee", function (req, res) {});
 
 /**
  * Route to add a new employee to the org-chart
@@ -285,32 +372,6 @@ router.put("/employee", function (req, res) {
  * @param {string} path - Express path
  * @param {callback} middleware - Express middleware.
  */
-router.post("/employee", function (req, res) {
-  // db.Person.create({
-  //     firstName: req.body.firstName,
-  //     lastName: req.body.lastName,
-  //     id: req.body.id
-  //     })
-  //     .then( person => {
-  //         res.status(200).send(JSON.stringify(person));
-  //     })
-  //     .catch( err => {
-  //         res.status(500).send(JSON.stringify(err));
-  //     });
-});
-
-// router.delete("/:id", function(req, res) {
-//     db.Person.destroy({
-//         where: {
-//             id: req.params.id
-//         }
-//         })
-//         .then( () => {
-//             res.status(200).send();
-//         })
-//         .catch( err => {
-//             res.status(500).send(JSON.stringify(err));
-//         });
-// });
+router.post("/employee", function (req, res) {});
 
 module.exports = router;
