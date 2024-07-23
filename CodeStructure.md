@@ -15,6 +15,9 @@ You may find this solution easy to navigate with this guide
     - This is where Creating a new Organization Chart API resides
 3. `router.put("/org-chart/:id", upload.single("org_chart"),` Refers to line 178
     - This is where Modification of Organization Chart API resides
+  
+### Database Model
+> Database model for handling the use-case could be found [./src/database/accendo.js](./src/database/accendo.js)
 
 ---
 **Note:** Please bear in mind, this is not an extensive guide, just a place to begin your journey.
